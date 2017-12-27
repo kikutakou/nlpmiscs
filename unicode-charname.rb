@@ -2,13 +2,38 @@
 
 data = DATA.read.rstrip.split("\n")
 
+RANGES = <<'EOS'
+\u4E00-\u9FFF,    # CJK UNIFIED IDEOGRAPHS
+\u4E00-\u9FD5,    # CJK UNIFIED IDEOGRAPHS
+\u3400-\u4DFF,    # CJK UNIFIED IDEOGRAPHS EXTENSION A
+\u20000-\u2A6FF,  # CJK UNIFIED IDEOGRAPHS EXTENSION B
+\u2A700-\u2B734,  # CJK UNIFIED IDEOGRAPHS EXTENSION C
+\u2B740-\u2B81F,  # CJK UNIFIED IDEOGRAPHS EXTENSION D
+\u2B820-\u2CEAF,  # CJK UNIFIED IDEOGRAPHS EXTENSION E
+\u2CEB0-\u2EBE0,  # CJK UNIFIED IDEOGRAPHS EXTENSION F
+\u3040-\u309F,    # HIRAGANA
+\u30A0-\u30FF,    # KATAKANA
+\u3000-\u303F,    # CJK SYMBOLS AND PUNCTUATION
+\uFF00-\uFFEF,    # HALFWIDTH AND FULLWIDTH FORMS
+EOS
+
+RULES = RANGES.split("\n").map{ |line| line.split(/, +/) }.map{ |r, n| [Regexp.new("[#{r}]"), n] }
+
+def search_rule(s)
+    res = RULES.find{ |regexp, name| regexp.match(s) }
+    return res ? res.last : "no data"
+end
+
+
+DLM = "    "
+
 ARGV.each{ |str|
 
     str = str.gsub(/\\u([\da-fA-F]{4})/) { [$1].pack('H*').unpack('n*').pack('U*') }
 
     str.chars.each{ |c|
         code = c.ord
-        r = data.bsearch { |x| code <=> x.split("    ").first.hex } #or "#{code.to_s(16).rjust(4, "0")}    Not found")
+        r = data.bsearch { |x| code <=> x.split(DLM).first.hex } || [code.to_s(16).rjust(4, "0"), search_rule(c)].join(DLM)
         puts [c.inspect, r].join("\t")
     }
 }
