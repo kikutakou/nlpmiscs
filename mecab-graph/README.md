@@ -19,5 +19,8 @@ $ pip install graphviz
 ```
 
 
+# how to use
 
-
+```
+$ echo "今日もしないとね。" | python mecab-graph
+```
