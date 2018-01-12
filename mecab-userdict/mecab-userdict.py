@@ -19,25 +19,30 @@ def existingFile(filename):
 
 # argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("inputs", type=existingFile, nargs="+", help="input file")
-parser.add_argument("-o", "--output", default="user.dic", help="output dictionary")
-parser.add_argument("--csvout", help="specify csv file output if you need")
+parser.add_argument("inputs", type=existingFile, nargs="+", help="list of user words")
+parser.add_argument("-o", "--output", default="user.dic", help="output destination")
+parser.add_argument("-d", "--dicdir", type=existingFile, help="mecab dictionary")
+parser.add_argument("--csvout", help="csv file output to preserve")
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-c", "--cost", default="10", help="cost")
-group.add_argument("-m", "--model", help="model file to estimate cost")
+group.add_argument("-m", "--model", help="model file to for cost estimation")
 args = parser.parse_args()
 
 if os.path.splitext(args.output)[1] != ".dic":
     args.output += ".dic"
+if args.dicdir:
+    dicdir = args.dicdir
+
 
 # print
 print("indexer: " + indexer)
 print("dictionary: " + dicdir)
 print("output to: " + args.output)
 
+command_base = "{} -f utf-8 -t utf-8 -d {}".format(indexer, dicdir)
 
 # create temp file then ouptut header
-temp = open(args.temp, "w") if args.csvout else tempfile.NamedTemporaryFile("w", delete=False)
+temp = open(args.csvout, "w") if args.csvout else tempfile.NamedTemporaryFile("w", delete=False)
 
 
 # output contents
@@ -59,14 +64,14 @@ if args.model:
     print("\n---estimating cost ...")
     temptemp = os.path.splitext(temp.name)[0] + "_tmp.csv"
     shutil.copyfile(temp.name, temptemp)
-    command = "{} -f utf-8 -t utf-8 -d {} -u {} -a {} -m {}".format(indexer, dicdir, temp.name, temptemp, args.model)
+    command = command_base + " -u {} -a -m {} {}".format(temp.name, args.model, temptemp)
     print("+ " + command)
     print(sp.check_output(command, shell=True).decode("utf8"))
 
 
 # convert
 print("\n---generating dic ...")
-command = "{} -f utf-8 -t utf-8 -d {} -u {} {}".format(indexer, dicdir, args.output, temp.name)
+command = command_base + " -u {} {}".format(args.output, temp.name)
 print("+ " + command)
 print(sp.check_output(command, shell=True).decode("utf8"))
 

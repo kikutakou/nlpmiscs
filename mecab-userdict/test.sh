@@ -13,7 +13,7 @@ EOF
 
 
 echo "##### generate dic"
-python mecab-userdict.py wordlist.txt -o test.dic -m mecab-ipadic-2.7.0-20070801.model
+python mecab-userdict.py wordlist.txt -o test.dic --csvout test.csv -m mecab-ipadic-2.7.0-20070801.model
 
 
 echo "##### test"
