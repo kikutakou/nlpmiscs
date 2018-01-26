@@ -1,4 +1,4 @@
-#!/usr/bin/env
+#!/usr/bin/env python
 import argparse
 import os
 import tempfile
@@ -57,7 +57,6 @@ for file in args.inputs:
             data = [word, "", "", cost, "名詞", "固有名詞", "一般", "*", "*", "*", word, "", ""]
             temp.write(",".join(data) + "\n")
 temp.close()
-
 
 # cost estimation
 if args.model:
